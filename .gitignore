@@ -1,0 +1,14 @@
+# runtime data
+/data/
+
+# web
+web/node_modules/
+web/dist/
+
+# backend
+backend/bin/
+backend/.cache/
+
+# editors and logs
+.DS_Store
+*.log

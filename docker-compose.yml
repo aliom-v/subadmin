@@ -1,0 +1,61 @@
+services:
+  api:
+    build:
+      context: ./backend
+    container_name: subadmin-api
+    environment:
+      LISTEN_ADDR: :8080
+      DATA_DIR: /data
+      DB_PATH: /data/subadmin.db
+      CACHE_DIR: /data/cache
+      JWT_SECRET: ${JWT_SECRET:-change-this-in-production}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
+      SUBLINK_URL: http://sublink:25500
+      DEFAULT_CACHE_MODE: ${DEFAULT_CACHE_MODE:-true}
+      DEFAULT_CACHE_INTERVAL_MINUTES: ${DEFAULT_CACHE_INTERVAL_MINUTES:-10}
+    volumes:
+      - ./data:/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "${API_PORT:-18080}:8080"
+    depends_on:
+      - sublink
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./web
+    container_name: subadmin-web
+    ports:
+      - "${WEB_PORT:-18081}:80"
+    restart: unless-stopped
+
+  sublink:
+    image: tindy2013/subconverter:latest
+    container_name: subadmin-sublink
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2.8.4
+    container_name: subadmin-caddy
+    profiles:
+      - gateway
+    ports:
+      - "${CADDY_HTTP_PORT:-80}:80"
+      - "${CADDY_HTTPS_PORT:-443}:443"
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+      - web
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:

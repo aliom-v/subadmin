@@ -1,0 +1,27 @@
+{$DOMAIN:localhost} {
+  encode gzip zstd
+
+  handle /api/* {
+    reverse_proxy api:8080
+  }
+
+  handle /clash {
+    reverse_proxy api:8080
+  }
+
+  handle /singbox {
+    reverse_proxy api:8080
+  }
+
+  handle /healthz {
+    reverse_proxy api:8080
+  }
+
+  handle_path /admin/* {
+    reverse_proxy web:80
+  }
+
+  handle {
+    respond "SubAdmin is running" 200
+  }
+}
